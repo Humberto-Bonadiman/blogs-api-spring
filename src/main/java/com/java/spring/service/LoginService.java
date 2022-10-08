@@ -3,7 +3,7 @@ package com.java.spring.service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.java.spring.model.User;
-import com.java.spring.repository.UserRepository;
+import com.java.spring.repository.LoginRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class LoginService {
 
   @Autowired
-  UserRepository repository;
+  LoginRepository repository;
 
   public String findByEmail(String email) {
     Algorithm algorithm = Algorithm.HMAC256(System.getenv("SECRET"));
