@@ -13,6 +13,9 @@ public class ControllerAdvices {
       DisplayNameLengthException.class,
       PasswordLengthException.class,
       NullPointerException.class,
+      EmailNotFoundException.class,
+      EmptyEmailException.class,
+      EmptyPasswordException.class,
   })
   public ResponseEntity<Object> handlerBadRequest(RuntimeException exception) {
     return new ResponseEntity<>(new DataError(exception.getMessage()), HttpStatus.BAD_REQUEST);

@@ -20,6 +20,6 @@ public class LoginController {
 
   @PostMapping
   public ResponseEntity<String> create(@RequestBody LoginUserDto object) {
-    return ResponseEntity.status(HttpStatus.OK).body(service.findByEmail(object.getEmail()));
+    return ResponseEntity.status(HttpStatus.OK).body(service.findByEmail(object));
   }
 }

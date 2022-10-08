@@ -1,17 +1,17 @@
 package com.java.spring.exception;
 
 public class DataError {
-  private String error;
+  private String message;
 
-  public DataError(String error) {
-    this.error = error;
+  public DataError(String message) {
+    this.message = message;
   }
 
-  public String getError() {
-    return error;
+  public String getmessage() {
+    return message;
   }
 
-  public void setError(String error) {
-    this.error = error;
+  public void setmessage(String message) {
+    this.message = message;
   }
 }
