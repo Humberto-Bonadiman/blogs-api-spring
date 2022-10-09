@@ -1,16 +1,19 @@
 package com.java.spring.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.java.spring.dto.CategoriesDto;
 import com.java.spring.model.Categories;
 import com.java.spring.repository.CategoriesRepository;
 
 @Service
 @Component
-public class CategoriesService {
+public class CategoriesService implements CategoriesServiceInterface<CategoriesDto, Categories> {
 
   @Autowired
   CategoriesRepository repository;
@@ -18,15 +21,26 @@ public class CategoriesService {
   @Autowired
   UserService userService;
 
-  public Categories create(String token, String name) {
+  @Override
+  public Categories create(String token, CategoriesDto category) {
     try {
-      if (name == null) throw new NullPointerException("all values is required");
+      if (category.getName() == null) throw new NullPointerException("all values is required");
       userService.verifyToken(token);
-      Categories category = new Categories();
-      category.setName(name);
-      return repository.save(category);
+      Categories newCategory = new Categories();
+      newCategory.setName(category.getName());
+      return repository.save(newCategory);
     } catch (JWTVerificationException exception){
       throw new JWTVerificationException("Expired or invalid token");
     }
+  }
+
+  @Override
+  public List<Categories> findAll(String token) {
+    try {
+      userService.verifyToken(token);
+      return repository.findAll();
+    } catch (JWTVerificationException exception){
+      throw new JWTVerificationException("Expired or invalid token");
+    } 
   }
 }

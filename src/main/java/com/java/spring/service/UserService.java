@@ -25,7 +25,7 @@ import com.java.spring.repository.UserRepository;
 
 @Service
 @Component
-public class UserService implements ServiceInterface<CreateUserDto, User> {
+public class UserService implements UserServiceInterface<CreateUserDto, User> {
 
   @Autowired
   UserRepository repository;
