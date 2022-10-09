@@ -87,7 +87,7 @@ public class UserService implements ServiceInterface<CreateUserDto, User> {
     return false;
   }
 
-  public static DecodedJWT verifyToken(String token) {
+  public DecodedJWT verifyToken(String token) {
     if (token.equals("")) throw new TokenNotFoundException();
     Algorithm algorithm = Algorithm.HMAC256(System.getenv("SECRET"));  
     JWTVerifier verifier = JWT.require(algorithm).build();
