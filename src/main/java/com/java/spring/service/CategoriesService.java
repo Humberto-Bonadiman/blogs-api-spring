@@ -22,7 +22,7 @@ public class CategoriesService implements CategoriesServiceInterface<CategoriesD
   UserService userService;
 
   @Override
-  public Categories create(String token, CategoriesDto category) {
+  public Categories create(CategoriesDto category, String token) {
     try {
       if (category.getName() == null) throw new NullPointerException("all values is required");
       userService.verifyToken(token);

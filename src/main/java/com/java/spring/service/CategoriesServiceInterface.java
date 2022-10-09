@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface CategoriesServiceInterface<T, K> {
 
-  public K create(String token, T object);
+  public K create(T object, String token);
 
   public List<K> findAll(String token);
 

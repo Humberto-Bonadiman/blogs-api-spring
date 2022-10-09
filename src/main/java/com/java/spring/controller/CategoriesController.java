@@ -26,11 +26,11 @@ public class CategoriesController {
 
   @PostMapping
   public ResponseEntity<Categories> create(
-    @RequestHeader(value="token", defaultValue = "") String token,
-    @RequestBody CategoriesDto category
+    @RequestBody CategoriesDto category,
+    @RequestHeader(value="token", defaultValue = "") String token
   ) {
     if (token == "") throw new TokenNotFoundException();
-    return ResponseEntity.status(HttpStatus.CREATED).body(service.create(token, category.getName()));
+    return ResponseEntity.status(HttpStatus.CREATED).body(service.create(category, token));
   }
 
   @GetMapping
