@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.java.spring.dto.CategoriesDto;
+import com.java.spring.exception.CategoryNotFoundException;
 import com.java.spring.model.Categories;
 import com.java.spring.repository.CategoriesRepository;
 

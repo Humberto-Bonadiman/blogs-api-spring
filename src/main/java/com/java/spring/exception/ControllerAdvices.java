@@ -18,6 +18,7 @@ public class ControllerAdvices {
       EmailNotFoundException.class,
       EmptyEmailException.class,
       EmptyPasswordException.class,
+      CategoryNotFoundException.class,
   })
   public ResponseEntity<Object> handlerBadRequest(RuntimeException exception) {
     return new ResponseEntity<>(new DataError(exception.getMessage()), HttpStatus.BAD_REQUEST);
