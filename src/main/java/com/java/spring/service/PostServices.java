@@ -4,8 +4,11 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.java.spring.dto.CreatePostResultDto;
 import com.java.spring.dto.PostDto;
+import com.java.spring.dto.UpdatePostDto;
+import com.java.spring.dto.UpdatePostResultDto;
 import com.java.spring.exception.CategoryNotFoundException;
 import com.java.spring.exception.PostNotFoundException;
+import com.java.spring.exception.UnauthorizedUserException;
 import com.java.spring.model.Categories;
 import com.java.spring.model.Post;
 import com.java.spring.model.User;
@@ -13,7 +16,6 @@ import com.java.spring.repository.CategoriesRepository;
 import com.java.spring.repository.PostRepository;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.codec.binary.Base64;
@@ -80,6 +82,27 @@ public class PostServices {
     } catch (Exception e) {
       throw new PostNotFoundException();
     }
+  }
+
+  public UpdatePostResultDto update(String token, Long id, UpdatePostDto object) {
+    DecodedJWT decoded = userService.verifyToken(token);
+    Long numberId = returnIdToken(decoded);
+    userService.verifyToken(token);
+    Optional<Post> isPost = repository.findById(id);
+    if (isPost.isEmpty()) throw new PostNotFoundException();
+    Post post = repository.findById(id).get();
+    if (!numberId.equals(post.getUserId())) {
+      throw new UnauthorizedUserException();
+    }
+    post.setTitle(object.getTitle());
+    post.setContent(object.getContent());
+    post.setUpdated(Clock.systemDefaultZone().instant());
+    UpdatePostResultDto returnPost = new UpdatePostResultDto();
+    returnPost.setTitle(object.getTitle());
+    returnPost.setContent(object.getContent());
+    returnPost.setUserId(post.getUserId());
+    returnPost.setCategories(post.getCategories());
+    return returnPost;
   }
 
   public Long returnIdToken(DecodedJWT decoded) {

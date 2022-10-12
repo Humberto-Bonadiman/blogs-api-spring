@@ -29,7 +29,11 @@ public class ControllerAdvices {
     return new ResponseEntity<>(new DataError(exception.getMessage()), HttpStatus.CONFLICT);
   }
 
-  @ExceptionHandler({JWTVerificationException.class, TokenNotFoundException.class})
+  @ExceptionHandler({
+      JWTVerificationException.class,
+      TokenNotFoundException.class,
+      UnauthorizedUserException.class
+  })
   public ResponseEntity<Object> handlerUnauthorized(RuntimeException exception) {
     return new ResponseEntity<>(new DataError(exception.getMessage()), HttpStatus.UNAUTHORIZED);
   }
