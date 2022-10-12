@@ -34,7 +34,7 @@ public class ControllerAdvices {
     return new ResponseEntity<>(new DataError(exception.getMessage()), HttpStatus.UNAUTHORIZED);
   }
 
-  @ExceptionHandler({UserNotFoundException.class})
+  @ExceptionHandler({UserNotFoundException.class, PostNotFoundException.class})
   public ResponseEntity<Object> handlerNotFound(RuntimeException exception) {
     return new ResponseEntity<>(new DataError(exception.getMessage()), HttpStatus.NOT_FOUND);
   }

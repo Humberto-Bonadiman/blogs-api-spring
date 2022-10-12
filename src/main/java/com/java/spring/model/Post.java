@@ -1,6 +1,7 @@
 package com.java.spring.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +12,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -31,10 +34,19 @@ public class Post {
   @Column(nullable = false)
   private Long userId;
 
-  @JsonIgnore
+  @Column
+  private Instant published;
+
+  @Column
+  private Instant updated;
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "users")
+  private User user;
+
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true,
       fetch = FetchType.LAZY)
-  private List<Categories> categoryIds = new ArrayList<Categories>();
+  private List<Categories> categories = new ArrayList<Categories>();
 
   public Long getId() {
     return id;
@@ -68,17 +80,42 @@ public class Post {
     this.content = content;
   }
 
-  public List<Categories> getCategoryIds() {
-    return categoryIds;
+  public User getUser() {
+    return user;
   }
 
-  public void addCategoryIds(Categories categoryIds) {
-    this.categoryIds.add(categoryIds);
+  public void setUser(User user) {
+    this.user = user;
+  }
+
+  public List<Categories> getCategories() {
+    return categories;
+  }
+
+  public void addCategories(Categories categories) {
+    categories.setPost(this);
+    this.categories.add(categories);
+  }
+
+  public Instant getPublished() {
+    return published;
+  }
+
+  public void setPublished(Instant published) {
+    this.published = published;
+  }
+
+  public Instant getUpdated() {
+    return updated;
+  }
+
+  public void setUpdated(Instant updated) {
+    this.updated = updated;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(categoryIds, content, id, title, userId);
+    return Objects.hash(categories, content, id, title, userId, updated);
   }
 
   @Override
@@ -87,10 +124,11 @@ public class Post {
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
     Post other = (Post) obj;
-    return Objects.equals(categoryIds, other.categoryIds)
+    return Objects.equals(categories, other.categories)
         && Objects.equals(content, other.content)
         && Objects.equals(id, other.id)
         && Objects.equals(title, other.title)
-        && Objects.equals(userId, other.userId);
+        && Objects.equals(userId, other.userId)
+        && Objects.equals(updated, other.updated);
   }
 }

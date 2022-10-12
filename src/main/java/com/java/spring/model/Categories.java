@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "categories")
 public class Categories {
@@ -23,7 +25,8 @@ public class Categories {
   @Column(nullable = false)
   private String name;
 
-  @JoinColumn(insertable = false, updatable = false)
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @JoinColumn(name = "post_id")
   @ManyToOne(targetEntity = Post.class, fetch = FetchType.EAGER)
   private Post post;
 
@@ -43,6 +46,14 @@ public class Categories {
     this.name = name;
   }
 
+  public Post getPost() {
+    return post;
+  }
+
+  public void setPost(Post post) {
+    this.post = post;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(id, name);
@@ -55,5 +66,10 @@ public class Categories {
     if (getClass() != obj.getClass()) return false;
     Categories other = (Categories) obj;
     return Objects.equals(id, other.id) && Objects.equals(name, other.name);
+  }
+
+  @Override
+  public String toString() {
+    return "Categories [id=" + id + ", name=" + name + ", post=" + post + "]";
   }
 }

@@ -2,12 +2,19 @@ package com.java.spring.service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.java.spring.dto.CreatePostResultDto;
 import com.java.spring.dto.PostDto;
 import com.java.spring.exception.CategoryNotFoundException;
+import com.java.spring.exception.PostNotFoundException;
 import com.java.spring.model.Categories;
 import com.java.spring.model.Post;
+import com.java.spring.model.User;
 import com.java.spring.repository.CategoriesRepository;
 import com.java.spring.repository.PostRepository;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
@@ -28,7 +35,7 @@ public class PostServices {
   @Autowired
   UserService userService;
 
-  public Post create(PostDto object, String token) {
+  public CreatePostResultDto create(PostDto object, String token) {
     try {
       DecodedJWT decoded = userService.verifyToken(token);
       Long numberId = returnIdToken(decoded);
@@ -42,15 +49,36 @@ public class PostServices {
       newPost.setTitle(object.getTitle());
       newPost.setContent(object.getContent());
       newPost.setUserId(numberId);
+      newPost.setPublished(Clock.systemDefaultZone().instant());
+      newPost.setUpdated(Clock.systemDefaultZone().instant());
+      User user = userService.findById(numberId, token);
+      newPost.setUser(user);
       for(Long id: object.getCategoryIds()) {
         Optional<Categories> category = categoriesRepository.findById(id);
         if (category.isEmpty()) throw new CategoryNotFoundException();
-        Categories categoryid = categoriesRepository.findById(id).get();
-        newPost.addCategoryIds(categoryid);
+        Categories categories = categoriesRepository.findById(id).get();
+        newPost.addCategories(categories);
       }
-      return repository.save(newPost);
+      repository.save(newPost);
+      CreatePostResultDto result = new CreatePostResultDto(
+          newPost.getId(), newPost.getUserId(), newPost.getTitle(), newPost.getContent());
+      return result;
     } catch (JWTVerificationException exception){
       throw new JWTVerificationException("Expired or invalid token");
+    }
+  }
+
+  public List<Post> findAll(String token) {
+    userService.verifyToken(token);
+    return repository.findAll();
+  }
+
+  public Post findById(String token, Long id) {
+    try {
+      userService.verifyToken(token);
+      return repository.findById(id).get();
+    } catch (PostNotFoundException e) {
+      throw new PostNotFoundException();
     }
   }
 
