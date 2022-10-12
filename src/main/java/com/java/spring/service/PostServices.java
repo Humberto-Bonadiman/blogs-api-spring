@@ -77,7 +77,7 @@ public class PostServices {
     try {
       userService.verifyToken(token);
       return repository.findById(id).get();
-    } catch (PostNotFoundException e) {
+    } catch (Exception e) {
       throw new PostNotFoundException();
     }
   }
