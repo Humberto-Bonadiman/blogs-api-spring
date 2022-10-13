@@ -71,38 +71,67 @@ public class PostServices {
   }
 
   public List<Post> findAll(String token) {
-    userService.verifyToken(token);
-    return repository.findAll();
+    try {
+      userService.verifyToken(token);
+      return repository.findAll();
+    } catch (JWTVerificationException exception){
+      throw new JWTVerificationException("Expired or invalid token");
+    }
+
   }
 
   public Post findById(String token, Long id) {
     try {
       userService.verifyToken(token);
+      Optional<Post> isPost = repository.findById(id);
+      if (isPost.isEmpty()) throw new PostNotFoundException();
       return repository.findById(id).get();
-    } catch (Exception e) {
-      throw new PostNotFoundException();
+    } catch (JWTVerificationException exception){
+      throw new JWTVerificationException("Expired or invalid token");
     }
   }
 
   public UpdatePostResultDto update(String token, Long id, UpdatePostDto object) {
-    DecodedJWT decoded = userService.verifyToken(token);
-    Long numberId = returnIdToken(decoded);
-    userService.verifyToken(token);
-    Optional<Post> isPost = repository.findById(id);
-    if (isPost.isEmpty()) throw new PostNotFoundException();
-    Post post = repository.findById(id).get();
-    if (!numberId.equals(post.getUserId())) {
-      throw new UnauthorizedUserException();
+    try {
+      DecodedJWT decoded = userService.verifyToken(token);
+      Long numberId = returnIdToken(decoded);
+      userService.verifyToken(token);
+      Optional<Post> isPost = repository.findById(id);
+      if (isPost.isEmpty()) throw new PostNotFoundException();
+      Post post = repository.findById(id).get();
+      if (!numberId.equals(post.getUserId())) {
+        throw new UnauthorizedUserException();
+      }
+      post.setTitle(object.getTitle());
+      post.setContent(object.getContent());
+      post.setUpdated(Clock.systemDefaultZone().instant());
+      UpdatePostResultDto returnPost = new UpdatePostResultDto();
+      returnPost.setTitle(object.getTitle());
+      returnPost.setContent(object.getContent());
+      returnPost.setUserId(post.getUserId());
+      returnPost.setCategories(post.getCategories());
+      return returnPost;
+    } catch (JWTVerificationException exception){
+      throw new JWTVerificationException("Expired or invalid token");
     }
-    post.setTitle(object.getTitle());
-    post.setContent(object.getContent());
-    post.setUpdated(Clock.systemDefaultZone().instant());
-    UpdatePostResultDto returnPost = new UpdatePostResultDto();
-    returnPost.setTitle(object.getTitle());
-    returnPost.setContent(object.getContent());
-    returnPost.setUserId(post.getUserId());
-    returnPost.setCategories(post.getCategories());
-    return returnPost;
+  }
+
+  public void delete(String token, Long id) {
+    try {
+      userService.verifyToken(token);
+      DecodedJWT decoded = userService.verifyToken(token);
+      Long numberId = returnIdToken(decoded);
+      Optional<Post> isPost = repository.findById(id);
+      if (isPost.isEmpty()) throw new PostNotFoundException();
+      Post post = repository.findById(id).get();
+      if (!numberId.equals(post.getUserId())) {
+        throw new UnauthorizedUserException();
+      }
+      repository.deleteById(id);
+    } catch (JWTVerificationException exception){
+      throw new JWTVerificationException("Expired or invalid token");
+    }
+
   }
 
   public Long returnIdToken(DecodedJWT decoded) {
