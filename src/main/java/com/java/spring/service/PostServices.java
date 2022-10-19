@@ -40,36 +40,34 @@ public class PostServices {
   GlobalMethodsService globalService;
 
   public CreatePostResultDto create(PostDto object, String token) {
-    try {
-      DecodedJWT decoded = globalService.verifyToken(token);
-      Long numberId = globalService.returnIdToken(decoded);
-      globalService.verifyToken(token);
-      if (object.getTitle() == null
-          || object.getContent() == null
-          || object.getCategoryIds() == null) {
-        throw new NullPointerException("all values is required");
-      }
-      Post newPost = new Post();
-      newPost.setTitle(object.getTitle());
-      newPost.setContent(object.getContent());
-      newPost.setUserId(numberId);
-      newPost.setPublished(Clock.systemDefaultZone().instant());
-      newPost.setUpdated(Clock.systemDefaultZone().instant());
-      User user = userRepository.findById(numberId).get();
-      newPost.setUser(user);
-      for(Long id: object.getCategoryIds()) {
-        Optional<Categories> category = categoriesRepository.findById(id);
-        if (category.isEmpty()) throw new CategoryNotFoundException();
-        Categories categories = categoriesRepository.findById(id).get();
-        newPost.addCategories(categories);
-      }
-      repository.save(newPost);
-      CreatePostResultDto result = new CreatePostResultDto(
-          newPost.getId(), newPost.getUserId(), newPost.getTitle(), newPost.getContent());
-      return result;
-    } catch (JWTVerificationException exception){
-      throw new JWTVerificationException("Expired or invalid token");
+    DecodedJWT decoded = globalService.verifyToken(token);
+    Long numberId = globalService.returnIdToken(decoded);
+    globalService.verifyToken(token);
+    if (object.getTitle() == null
+        || object.getContent() == null
+        || object.getCategoryIds() == null) {
+      throw new NullPointerException("all values is required");
     }
+    Post newPost = new Post();
+    newPost.setTitle(object.getTitle());
+    newPost.setContent(object.getContent());
+    newPost.setUserId(numberId);
+    newPost.setPublished(Clock.systemDefaultZone().instant());
+    newPost.setUpdated(Clock.systemDefaultZone().instant());
+    User user = userRepository.findById(numberId).get();
+    newPost.setUser(user);
+    for(Long id: object.getCategoryIds()) {
+      Optional<Categories> category = categoriesRepository.findById(id);
+      if (category.isEmpty()) {
+        throw new CategoryNotFoundException();
+      }
+      Categories categories = categoriesRepository.findById(id).get();
+      newPost.addCategories(categories);
+    }
+    repository.save(newPost);
+    CreatePostResultDto result = new CreatePostResultDto(
+        newPost.getId(), newPost.getUserId(), newPost.getTitle(), newPost.getContent());
+    return result;
   }
 
   public List<Post> findAll(String token) {
