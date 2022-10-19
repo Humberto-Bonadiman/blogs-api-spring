@@ -24,7 +24,9 @@ public class CategoriesService implements CategoriesServiceInterface<CategoriesD
   @Override
   public Categories create(CategoriesDto category, String token) {
     try {
-      if (category.getName() == null) throw new NullPointerException("all values is required");
+      if (category.getName() == null) {
+        throw new NullPointerException("all values is required");
+      }
       globalService.verifyToken(token);
       Categories newCategory = new Categories();
       newCategory.setName(category.getName());
