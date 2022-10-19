@@ -32,7 +32,11 @@ public class LoginService {
     if (user.getPassword() == "") throw new EmptyPasswordException();
     Optional<User> findEmail = repository.findByEmailAndPassword(user.getEmail(), user.getPassword());
     if (findEmail.isEmpty()) throw new EmailNotFoundException();
-    Algorithm algorithm = Algorithm.HMAC256(System.getenv("SECRET"));
+    String secret = System.getenv("SECRET");
+    if (secret == null) {
+      secret = "BH&2&@2f3%#6qPt5B";
+    }
+    Algorithm algorithm = Algorithm.HMAC256(secret); 
     Map<String, Object> payloadClaims = new HashMap<>();
     User userFound = repository.findByEmail(user.getEmail());
     payloadClaims.put("id", userFound.getId());
@@ -50,16 +54,5 @@ public class LoginService {
     LocalDate todayMoreSeven =  LocalDate.now().plusDays(7);
     Date date = Date.from(todayMoreSeven.atStartOfDay(ZoneId.systemDefault()).toInstant());
     return date;
-  }
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  } 
 }

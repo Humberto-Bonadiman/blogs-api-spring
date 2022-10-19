@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.java.spring.dto.CreatePostResultDto;
@@ -72,5 +73,14 @@ public class PostController {
     if (token == "") throw new TokenNotFoundException();
     service.delete(token, id);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  @GetMapping("/search")
+  public ResponseEntity<List<Post>> findByQuery(
+      @RequestHeader(value="token", defaultValue = "") String token,
+      @RequestParam(defaultValue = "") String q
+  ) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(service.findByQueryParamTitleContent(token, q));
   }
 }

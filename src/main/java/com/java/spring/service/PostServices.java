@@ -14,12 +14,12 @@ import com.java.spring.model.Post;
 import com.java.spring.model.User;
 import com.java.spring.repository.CategoriesRepository;
 import com.java.spring.repository.PostRepository;
+import com.java.spring.repository.UserRepository;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -32,16 +32,19 @@ public class PostServices {
   PostRepository repository;
 
   @Autowired
+  UserRepository userRepository;
+
+  @Autowired
   CategoriesRepository categoriesRepository;
 
   @Autowired
-  UserService userService;
+  GlobalMethodsService globalService;
 
   public CreatePostResultDto create(PostDto object, String token) {
     try {
-      DecodedJWT decoded = userService.verifyToken(token);
-      Long numberId = returnIdToken(decoded);
-      userService.verifyToken(token);
+      DecodedJWT decoded = globalService.verifyToken(token);
+      Long numberId = globalService.returnIdToken(decoded);
+      globalService.verifyToken(token);
       if (object.getTitle() == null
           || object.getContent() == null
           || object.getCategoryIds() == null) {
@@ -53,7 +56,7 @@ public class PostServices {
       newPost.setUserId(numberId);
       newPost.setPublished(Clock.systemDefaultZone().instant());
       newPost.setUpdated(Clock.systemDefaultZone().instant());
-      User user = userService.findById(numberId, token);
+      User user = userRepository.findById(numberId).get();
       newPost.setUser(user);
       for(Long id: object.getCategoryIds()) {
         Optional<Categories> category = categoriesRepository.findById(id);
@@ -72,7 +75,7 @@ public class PostServices {
 
   public List<Post> findAll(String token) {
     try {
-      userService.verifyToken(token);
+      globalService.verifyToken(token);
       return repository.findAll();
     } catch (JWTVerificationException exception){
       throw new JWTVerificationException("Expired or invalid token");
@@ -82,7 +85,7 @@ public class PostServices {
 
   public Post findById(String token, Long id) {
     try {
-      userService.verifyToken(token);
+      globalService.verifyToken(token);
       Optional<Post> isPost = repository.findById(id);
       if (isPost.isEmpty()) throw new PostNotFoundException();
       return repository.findById(id).get();
@@ -93,9 +96,9 @@ public class PostServices {
 
   public UpdatePostResultDto update(String token, Long id, UpdatePostDto object) {
     try {
-      DecodedJWT decoded = userService.verifyToken(token);
-      Long numberId = returnIdToken(decoded);
-      userService.verifyToken(token);
+      DecodedJWT decoded = globalService.verifyToken(token);
+      Long numberId = globalService.returnIdToken(decoded);
+      globalService.verifyToken(token);
       Optional<Post> isPost = repository.findById(id);
       if (isPost.isEmpty()) throw new PostNotFoundException();
       Post post = repository.findById(id).get();
@@ -118,9 +121,9 @@ public class PostServices {
 
   public void delete(String token, Long id) {
     try {
-      userService.verifyToken(token);
-      DecodedJWT decoded = userService.verifyToken(token);
-      Long numberId = returnIdToken(decoded);
+      globalService.verifyToken(token);
+      DecodedJWT decoded = globalService.verifyToken(token);
+      Long numberId = globalService.returnIdToken(decoded);
       Optional<Post> isPost = repository.findById(id);
       if (isPost.isEmpty()) throw new PostNotFoundException();
       Post post = repository.findById(id).get();
@@ -131,18 +134,14 @@ public class PostServices {
     } catch (JWTVerificationException exception){
       throw new JWTVerificationException("Expired or invalid token");
     }
-
   }
 
-  public Long returnIdToken(DecodedJWT decoded) {
-    String encPayload = decoded.getPayload();
-    String payload = decode(encPayload);
-    String firstPartPayload = payload.substring(payload.indexOf("id") + 4);
-    return Long.parseLong(
-        firstPartPayload.substring(0, firstPartPayload.indexOf(","))); 
-  }
-
-  public String decode(final String base64) {
-    return StringUtils.newStringUtf8(Base64.decodeBase64(base64));
+  public List<Post> findByQueryParamTitleContent(String token, String q) {
+    globalService.verifyToken(token);
+    if (q == "") {
+      return repository.findAll();
+    }
+    List<Post> findByTitle = repository.findByTitleOrContent(q);
+    return findByTitle;
   }
 }

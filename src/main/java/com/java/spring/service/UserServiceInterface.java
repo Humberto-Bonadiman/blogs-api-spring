@@ -10,4 +10,5 @@ public interface UserServiceInterface<T, K> {
 
   public K findById(Long id, String token);
 
+  public void deleteMe(String token);
 }

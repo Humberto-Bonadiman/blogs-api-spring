@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.java.spring.dto.CategoriesDto;
-import com.java.spring.exception.CategoryNotFoundException;
 import com.java.spring.model.Categories;
 import com.java.spring.repository.CategoriesRepository;
 
@@ -20,13 +19,13 @@ public class CategoriesService implements CategoriesServiceInterface<CategoriesD
   CategoriesRepository repository;
 
   @Autowired
-  UserService userService;
+  GlobalMethodsService globalService;
 
   @Override
   public Categories create(CategoriesDto category, String token) {
     try {
       if (category.getName() == null) throw new NullPointerException("all values is required");
-      userService.verifyToken(token);
+      globalService.verifyToken(token);
       Categories newCategory = new Categories();
       newCategory.setName(category.getName());
       return repository.save(newCategory);
@@ -38,7 +37,7 @@ public class CategoriesService implements CategoriesServiceInterface<CategoriesD
   @Override
   public List<Categories> findAll(String token) {
     try {
-      userService.verifyToken(token);
+      globalService.verifyToken(token);
       return repository.findAll();
     } catch (JWTVerificationException exception){
       throw new JWTVerificationException("Expired or invalid token");
