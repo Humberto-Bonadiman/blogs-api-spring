@@ -3,6 +3,7 @@ package com.java.spring.service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.java.spring.dto.LoginUserDto;
+import com.java.spring.dto.TokenDto;
 import com.java.spring.exception.EmailNotFoundException;
 import com.java.spring.exception.EmptyEmailException;
 import com.java.spring.exception.EmptyPasswordException;
@@ -24,13 +25,18 @@ public class LoginService {
   @Autowired
   LoginRepository repository;
 
-  public String findByEmail(LoginUserDto user) {
+  public TokenDto findByEmail(LoginUserDto user) {
     if (user.getEmail() == null || user.getPassword() == null) {
       throw new NullPointerException("all values is required");
     }
-    if (user.getEmail() == "") throw new EmptyEmailException();
-    if (user.getPassword() == "") throw new EmptyPasswordException();
-    Optional<User> findEmail = repository.findByEmailAndPassword(user.getEmail(), user.getPassword());
+    if (user.getEmail() == "") {
+      throw new EmptyEmailException();
+    }
+    if (user.getPassword() == "") {
+      throw new EmptyPasswordException();
+    }
+    Optional<User> findEmail = repository
+        .findByEmailAndPassword(user.getEmail(), user.getPassword());
     if (findEmail.isEmpty()) throw new EmailNotFoundException();
     String secret = System.getenv("SECRET");
     if (secret == null) {
@@ -47,7 +53,8 @@ public class LoginService {
         .withPayload(payloadClaims)
         .withExpiresAt(localDateNowMoreSeven())
         .sign(algorithm);
-    return token;
+    TokenDto tokenDto = new TokenDto(token);
+    return tokenDto;
   }
 
   public Date localDateNowMoreSeven() {

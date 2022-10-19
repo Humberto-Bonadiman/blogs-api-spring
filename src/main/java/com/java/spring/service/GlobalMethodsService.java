@@ -15,7 +15,7 @@ import com.java.spring.exception.TokenNotFoundException;
 @Service
 public class GlobalMethodsService {
 
-  public static boolean isValidEmailAddress(String email) {
+  public boolean isValidEmailAddress(String email) {
     if (email == null) throw new NullPointerException("all values is required");
     boolean valid = EmailValidator.getInstance().isValid(email);
     return valid;

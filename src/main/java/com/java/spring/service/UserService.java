@@ -26,28 +26,32 @@ public class UserService implements UserServiceInterface<CreateUserDto, User> {
   UserRepository repository;
 
   @Autowired
-  GlobalMethodsService globalService;
-
-  @Autowired
   PostServices postServices;
+
+  GlobalMethodsService globalService = new GlobalMethodsService();
 
   @Override
   public User create(CreateUserDto user) {
-    try {
-      if (!GlobalMethodsService.isValidEmailAddress(user.getEmail())) throw new IncorrectEmailFormat();
-      if (!globalService.isValidDisplayNameLength(user.getDisplayName())) throw new DisplayNameLengthException();
-      if (!globalService.isValidPasswordLength(user.getPassword())) throw new PasswordLengthException();
-      Optional<User> findEmail = repository.findByEmail(user.getEmail());
-      if (findEmail.isPresent()) throw new EmailAlreadyExistException();
-      User newUser = new User();
-      newUser.setDisplayName(user.getDisplayName());
-      newUser.setEmail(user.getEmail());
-      newUser.setPassword(user.getPassword());
-      newUser.setImage(user.getImage());
-      return repository.save(newUser);
-    } catch(NullPointerException e) {
-      throw new NullPointerException("all values is required");
-	}
+    if (!globalService.isValidEmailAddress(user.getEmail())) {
+      throw new IncorrectEmailFormat();
+    }
+    if (!globalService.isValidDisplayNameLength(user.getDisplayName())) {
+      throw new DisplayNameLengthException();
+    }
+    if (!globalService.isValidPasswordLength(user.getPassword())) {
+      throw new PasswordLengthException();
+    }
+    Optional<User> findEmail = repository.findByEmail(user.getEmail());
+    if (findEmail.isPresent()) {
+      throw new EmailAlreadyExistException();
+    }
+    checkAllValues(user);
+    User newUser = new User();
+    newUser.setDisplayName(user.getDisplayName());
+    newUser.setEmail(user.getEmail());
+    newUser.setPassword(user.getPassword());
+    newUser.setImage(user.getImage());
+    return repository.save(newUser);
   }
 
   @Override
@@ -65,7 +69,9 @@ public class UserService implements UserServiceInterface<CreateUserDto, User> {
     try {
       globalService.verifyToken(token);
       Optional<User> user = repository.findById(id);
-      if (user.isEmpty()) throw new UserNotFoundException();
+      if (user.isEmpty()) {
+        throw new UserNotFoundException();
+      }
       return user.get();
     } catch (JWTVerificationException exception){
       throw new JWTVerificationException("Expired or invalid token");
@@ -84,4 +90,12 @@ public class UserService implements UserServiceInterface<CreateUserDto, User> {
     }
   }
 
+  public void checkAllValues(CreateUserDto userDto) {
+    if (userDto.getDisplayName() == null
+        || userDto.getPassword() == null
+        || userDto.getEmail() == null
+        || userDto.getImage() == null) {
+      throw new NullPointerException("all values is required");
+    }
+  }
 }

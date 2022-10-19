@@ -17,7 +17,6 @@ import com.java.spring.repository.PostRepository;
 import com.java.spring.repository.UserRepository;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;

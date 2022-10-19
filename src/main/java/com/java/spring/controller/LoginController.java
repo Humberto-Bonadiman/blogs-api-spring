@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.java.spring.dto.LoginUserDto;
+import com.java.spring.dto.TokenDto;
 import com.java.spring.service.LoginService;
 
 @RestController
@@ -19,7 +20,7 @@ public class LoginController {
   LoginService service;
 
   @PostMapping
-  public ResponseEntity<String> create(@RequestBody LoginUserDto object) {
+  public ResponseEntity<TokenDto> create(@RequestBody LoginUserDto object) {
     return ResponseEntity.status(HttpStatus.OK).body(service.findByEmail(object));
   }
 }
