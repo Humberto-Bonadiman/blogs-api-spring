@@ -25,14 +25,13 @@ import com.java.spring.repository.CategoriesRepository;
 import com.java.spring.repository.PostRepository;
 import com.java.spring.repository.UserRepository;
 import com.java.spring.service.LoginService;
-import com.java.spring.service.PostServices;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class FindAllPostApplicationTests {
+class FindPostByIdApplicationTests {
 
   @Autowired
-  MockMvc mockMvc;
+  private MockMvc mockMvc;
 
   @Autowired
   UserRepository repository;
@@ -45,9 +44,6 @@ class FindAllPostApplicationTests {
 
   @Autowired
   LoginService loginService;
-
-  @Autowired
-  PostServices postService;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -63,13 +59,10 @@ class FindAllPostApplicationTests {
     repository.deleteAll();
   }
 
-  /**
-   * problema ao testar as categorias.
-   */
   @Test
   @Order(1)
-  @DisplayName("1 - find all posts successfully")
-  void findAllPostsSuccessfully() throws Exception {
+  @DisplayName("1 - find a post by id successfully")
+  void findPostByIdSuccessfully() throws Exception {
     User user = new User();
     user.setDisplayName("Usuário de teste");
     user.setEmail("email_teste@email.com");
@@ -91,23 +84,23 @@ class FindAllPostApplicationTests {
     login.setEmail("email_teste@email.com");
     login.setPassword("12345678");
     TokenDto token = loginService.findByEmail(login);
-    mockMvc.perform(get("/post")
+    mockMvc.perform(get("/post/" + post.getId())
         .header("token", token.getToken()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].title").value(post.getTitle()))
-        .andExpect(jsonPath("$[0].content").value(post.getContent()))
-        .andExpect(jsonPath("$[0].userId").value(post.getUserId()))
-        .andExpect(jsonPath("$[0].user.id").value(user.getId()))
-        .andExpect(jsonPath("$[0].user.displayName").value(user.getDisplayName()))
-        .andExpect(jsonPath("$[0].user.email").value(user.getEmail()))
-        .andExpect(jsonPath("$[0].user.image").value(user.getImage()));
+        .andExpect(jsonPath("$.title").value(post.getTitle()))
+        .andExpect(jsonPath("$.content").value(post.getContent()))
+        .andExpect(jsonPath("$.userId").value(post.getUserId()))
+        .andExpect(jsonPath("$.user.id").value(user.getId()))
+        .andExpect(jsonPath("$.user.displayName").value(user.getDisplayName()))
+        .andExpect(jsonPath("$.user.email").value(user.getEmail()))
+        .andExpect(jsonPath("$.user.image").value(user.getImage()));
   }
 
   @Test
   @Order(2)
   @DisplayName("2 - throws a error if token is abscent")
   void throwsErrorWithoutToken() throws Exception {
-    mockMvc.perform(get("/post"))
+    mockMvc.perform(get("/post/1"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -115,7 +108,29 @@ class FindAllPostApplicationTests {
   @Order(3)
   @DisplayName("3 - throws a error if token is invalid")
   void invalidToken() throws Exception {
-    mockMvc.perform(get("/post").header("token", "abcd1525"))
+    mockMvc.perform(get("/post/1").header("token", "abcd1525"))
       .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @Order(1)
+  @DisplayName("1 - find all posts successfully")
+  void findAllPostsSuccessfully() throws Exception {
+    User user = new User();
+    user.setDisplayName("Usuário de teste");
+    user.setEmail("email_teste@email.com");
+    user.setPassword("12345678");
+    user.setImage("null");
+    repository.save(user);
+    Categories category = new Categories();
+    category.setName("Spring-boot");
+    categoriesRepository.save(category);
+    LoginUserDto login = new LoginUserDto();
+    login.setEmail("email_teste@email.com");
+    login.setPassword("12345678");
+    TokenDto token = loginService.findByEmail(login);
+    mockMvc.perform(get("/post/1500")
+        .header("token", token.getToken()))
+        .andExpect(status().isNotFound());
   }
 }
