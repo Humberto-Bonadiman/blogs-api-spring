@@ -1,0 +1,45 @@
+version: "3.8"
+services:
+  blogs-api-spring-net:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blogs-api-spring
+    restart: on-failure
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/blogs_api_spring?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
+      - SPRING_JPA_HIBERNATE_DDL-AUTO=create-drop
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+    networks:
+      - blogs-api-spring-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    image: postgres:15.0
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=blogs_api_spring
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - blogs-api-spring-net
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+networks:
+  blogs-api-spring-net:
+     driver: bridge
+volumes:
+  postgres:
