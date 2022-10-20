@@ -47,6 +47,11 @@ public class Post {
       fetch = FetchType.LAZY)
   private List<Categories> categories = new ArrayList<Categories>();
 
+  public Post() {
+    super();
+    this.categories = new ArrayList<Categories>();
+  }
+
   public Long getId() {
     return id;
   }
