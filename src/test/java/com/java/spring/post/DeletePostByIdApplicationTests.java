@@ -1,7 +1,6 @@
 package com.java.spring.post;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
@@ -14,13 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.java.spring.dto.LoginUserDto;
 import com.java.spring.dto.TokenDto;
-import com.java.spring.dto.UpdatePostDto;
 import com.java.spring.model.Categories;
 import com.java.spring.model.Post;
 import com.java.spring.model.User;
@@ -31,7 +27,7 @@ import com.java.spring.service.LoginService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class UpdatePostApplicationTests {
+class DeletePostByIdApplicationTests {
 
   @Autowired
   private MockMvc mockMvc;
@@ -64,8 +60,8 @@ class UpdatePostApplicationTests {
 
   @Test
   @Order(1)
-  @DisplayName("1 - find a post by id successfully")
-  void findPostByIdSuccessfully() throws Exception {
+  @DisplayName("1 - delete a post by id successfully")
+  void deletePostByIdSuccessfully() throws Exception {
     User user = new User();
     user.setDisplayName("Usuário de teste");
     user.setEmail("email_teste@email.com");
@@ -87,45 +83,16 @@ class UpdatePostApplicationTests {
     login.setEmail("email_teste@email.com");
     login.setPassword("12345678");
     TokenDto token = loginService.findByEmail(login);
-    UpdatePostDto update = new UpdatePostDto();
-    update.setTitle("Start Java Now");
-    update.setContent("Learn java in 4 months");
-    mockMvc.perform(put("/post/" + post.getId())
-        .header("token", token.getToken())
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(new ObjectMapper().writeValueAsString(update)))
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk());
+    mockMvc.perform(delete("/post/" + post.getId())
+        .header("token", token.getToken()))
+        .andExpect(status().isNoContent());
   }
 
   @Test
   @Order(2)
   @DisplayName("2 - throws a error if token is abscent")
   void throwsErrorWithoutToken() throws Exception {
-    User user = new User();
-    user.setDisplayName("Usuário de teste");
-    user.setEmail("email_teste@email.com");
-    user.setPassword("12345678");
-    user.setImage("null");
-    repository.save(user);
-    Categories category = new Categories();
-    category.setName("Spring-boot");
-    categoriesRepository.save(category);
-    Post post = new Post();
-    post.setTitle("Start Java Today");
-    post.setContent("Learn java in 6 months");
-    post.setUserId(user.getId());
-    post.setPublished(Clock.systemDefaultZone().instant());
-    post.setUpdated(Clock.systemDefaultZone().instant());
-    post.setUser(user);
-    postRepository.save(post);
-    UpdatePostDto update = new UpdatePostDto();
-    update.setTitle("Start Java Now");
-    update.setContent("Learn java in 4 months");
-    
-    mockMvc.perform(put("/post/" + post.getId())
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(new ObjectMapper().writeValueAsString(update)))
+    mockMvc.perform(delete("/post/1"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -133,36 +100,14 @@ class UpdatePostApplicationTests {
   @Order(3)
   @DisplayName("3 - throws a error if token is invalid")
   void invalidToken() throws Exception {
-    User user = new User();
-    user.setDisplayName("Usuário de teste");
-    user.setEmail("email_teste@email.com");
-    user.setPassword("12345678");
-    user.setImage("null");
-    repository.save(user);
-    Categories category = new Categories();
-    category.setName("Spring-boot");
-    categoriesRepository.save(category);
-    Post post = new Post();
-    post.setTitle("Start Java Today");
-    post.setContent("Learn java in 6 months");
-    post.setUserId(user.getId());
-    post.setPublished(Clock.systemDefaultZone().instant());
-    post.setUpdated(Clock.systemDefaultZone().instant());
-    post.setUser(user);
-    postRepository.save(post);
-    UpdatePostDto update = new UpdatePostDto();
-    update.setTitle("Start Java Now");
-    update.setContent("Learn java in 4 months");
-    mockMvc.perform(put("/post/1").header("token", "abcd1525")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(new ObjectMapper().writeValueAsString(update)))
-        .andExpect(status().isUnauthorized());
+    mockMvc.perform(delete("/post/1").header("token", "abcd1525"))
+      .andExpect(status().isUnauthorized());
   }
 
   @Test
   @Order(4)
-  @DisplayName("4 - post not found")
-  void postNotFound() throws Exception {
+  @DisplayName("4 - throws an error if id is absent")
+  void postDoNotExist() throws Exception {
     User user = new User();
     user.setDisplayName("Usuário de teste");
     user.setEmail("email_teste@email.com");
@@ -184,20 +129,14 @@ class UpdatePostApplicationTests {
     login.setEmail("email_teste@email.com");
     login.setPassword("12345678");
     TokenDto token = loginService.findByEmail(login);
-    UpdatePostDto update = new UpdatePostDto();
-    update.setTitle("Start Java Now");
-    update.setContent("Learn java in 4 months");
-    mockMvc.perform(put("/post/" + post.getId() + 10)
-        .header("token", token.getToken())
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(new ObjectMapper().writeValueAsString(update)))
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+    mockMvc.perform(delete("/post/10" + post.getId())
+        .header("token", token.getToken()))
         .andExpect(status().isNotFound());
   }
 
   @Test
   @Order(5)
-  @DisplayName("5 - user not authorized")
+  @DisplayName("5 - throws an error if user is not authorized")
   void userNotAuthorized() throws Exception {
     User user = new User();
     user.setDisplayName("Usuário de teste");
@@ -226,14 +165,8 @@ class UpdatePostApplicationTests {
     login.setEmail("segundo_teste@email.com");
     login.setPassword("12345678");
     TokenDto token = loginService.findByEmail(login);
-    UpdatePostDto update = new UpdatePostDto();
-    update.setTitle("Start Java Now");
-    update.setContent("Learn java in 4 months");
-    mockMvc.perform(put("/post/" + post.getId())
-        .header("token", token.getToken())
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(new ObjectMapper().writeValueAsString(update)))
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+    mockMvc.perform(delete("/post/" + post.getId())
+        .header("token", token.getToken()))
         .andExpect(status().isUnauthorized());
   }
 }
