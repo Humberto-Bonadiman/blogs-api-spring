@@ -88,9 +88,8 @@ class FindPostsByQueryApplicationTests {
     login.setEmail("email_teste@email.com");
     login.setPassword("12345678");
     TokenDto token = loginService.findByEmail(login);
-    mockMvc.perform(get("/post")
-        .header("token", token.getToken())
-        .param("q", "java"))
+    mockMvc.perform(get("/post/search?q=java")
+        .header("token", token.getToken()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].title").value(post.getTitle()))
         .andExpect(jsonPath("$[0].content").value(post.getContent()))
@@ -105,7 +104,7 @@ class FindPostsByQueryApplicationTests {
   @Order(2)
   @DisplayName("2 - throws a error if token is abscent")
   void throwsErrorWithoutToken() throws Exception {
-    mockMvc.perform(get("/post"))
+    mockMvc.perform(get("/post/search?q=text"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -113,7 +112,7 @@ class FindPostsByQueryApplicationTests {
   @Order(3)
   @DisplayName("3 - throws a error if token is invalid")
   void invalidToken() throws Exception {
-    mockMvc.perform(get("/post").header("token", "abcd1525"))
+    mockMvc.perform(get("/post/search?q=text").header("token", "abcd1525"))
       .andExpect(status().isUnauthorized());
   }
 
@@ -142,7 +141,7 @@ class FindPostsByQueryApplicationTests {
     login.setEmail("email_teste@email.com");
     login.setPassword("12345678");
     TokenDto token = loginService.findByEmail(login);
-    mockMvc.perform(get("/post")
+    mockMvc.perform(get("/post/search")
         .header("token", token.getToken())
         .param("q", ""))
         .andExpect(status().isOk())
@@ -153,5 +152,37 @@ class FindPostsByQueryApplicationTests {
         .andExpect(jsonPath("$[0].user.displayName").value(user.getDisplayName()))
         .andExpect(jsonPath("$[0].user.email").value(user.getEmail()))
         .andExpect(jsonPath("$[0].user.image").value(user.getImage()));
+  }
+
+  @Test
+  @Order(5)
+  @DisplayName("5 - show any posts if query is do not match")
+  void queryDoNotMatch() throws Exception {
+    User user = new User();
+    user.setDisplayName("Usuário de teste");
+    user.setEmail("email_teste@email.com");
+    user.setPassword("12345678");
+    user.setImage("null");
+    repository.save(user);
+    Categories category = new Categories();
+    category.setName("Spring-boot");
+    categoriesRepository.save(category);
+    Post post = new Post();
+    post.setTitle("Start Java Today");
+    post.setContent("Learn java in 6 months");
+    post.setUserId(user.getId());
+    post.setPublished(Clock.systemDefaultZone().instant());
+    post.setUpdated(Clock.systemDefaultZone().instant());
+    post.setUser(user);
+    postRepository.save(post);
+    LoginUserDto login = new LoginUserDto();
+    login.setEmail("email_teste@email.com");
+    login.setPassword("12345678");
+    TokenDto token = loginService.findByEmail(login);
+    mockMvc.perform(get("/post/search")
+        .header("token", token.getToken())
+        .param("q", "ztua"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isEmpty());
   }
 }
