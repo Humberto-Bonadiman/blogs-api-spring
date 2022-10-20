@@ -113,9 +113,9 @@ class FindPostByIdApplicationTests {
   }
 
   @Test
-  @Order(1)
-  @DisplayName("1 - find all posts successfully")
-  void findAllPostsSuccessfully() throws Exception {
+  @Order(4)
+  @DisplayName("4 - throws an error if post is not found")
+  void postNotFosund() throws Exception {
     User user = new User();
     user.setDisplayName("Usuário de teste");
     user.setEmail("email_teste@email.com");
