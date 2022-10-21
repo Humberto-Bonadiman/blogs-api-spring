@@ -123,6 +123,6 @@ mvn test -Dtest="com.java.spring.post.**"
 
 ## Documentação
 
-![Documentação Swagger](swagger_bank_account.png)
+![Documentação Swagger](swagger_blogs-api.png)
 
 Para acessar a documentação pelo swagger rode o comando **mvn spring-boot:run** e acesse o projeto via browser, no caminho http://localhost:8080/swagger-ui/index.html ou pelo caminho http://localhost:8080/v3/api-docs.
