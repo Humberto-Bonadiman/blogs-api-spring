@@ -31,3 +31,10 @@ jobs:
       - name: Docker Compose Build
         working-directory: .
         run: docker-compose build
+
+      - name: Build and push Docker images
+        run: |
+          docker tag ${{ secrets.DOCKER_USERNAME }}/blogs-api:1.0.0 ${{ secrets.DOCKER_USERNAME }}/blogs-api:${{github.run_id}}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/blogs-api:1.0.0 ${{ secrets.DOCKER_USERNAME }}/blogs-api:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/blogs-api:${{github.run_id}}
+          docker push ${{ secrets.DOCKER_USERNAME }}/blogs-api:latest
